@@ -49,6 +49,19 @@ namespace OmegaSudoku
                 for (int j = 0;j < this.boardSize;j++)
                     this.board[i,j] = board[i,j];
         }
+        public SudokuBoard(string s) // string ctor
+        {
+            double boardSize=Math.Sqrt(s.Length);
+            double squareSize=Math.Sqrt(boardSize);
+            if (squareSize != (int)squareSize)
+                throw new Exception("Board size must be a perfect square");
+            this.boardSize = (int)boardSize;
+            this.squareSize= (int)squareSize;
+            this.board = new int[this.boardSize, this.boardSize];
+            for (int i = 0; i < this.boardSize; i++)
+                for (int j = 0; j < this.boardSize; j++)
+                    this.board[i, j] = s[i * this.boardSize + j] - '0'; // only for 9*9 currently, easy to modify
+        }
         public bool CheckComplete()
         {
             if(!this.CheckFilled())
@@ -128,6 +141,39 @@ namespace OmegaSudoku
                 }
             return true;
         }
+        public override string ToString()
+        {
+            string result = "";
+            string seperator = "";
+            for (int i = 0; i < squareSize; i++)
+            {
+                seperator += "+";
+                for (int j = 0; j < squareSize * 2 + 1; j++) seperator += "-";
+            }
+            seperator += "+\n";
+
+            for (int i = 0; i < squareSize; i++)
+            {
+                result += seperator;
+                for (int j = 0; j < squareSize; j++)
+                {
+                    string line = "";
+                    for (int k = 0; k < squareSize; k++)
+                    {
+                        line += "| ";
+                        for (int t = 0; t < squareSize; t++)
+                        {
+                            line += board[i * squareSize + j, k * squareSize + t];
+                            line += " ";
+                        }
+                    }
+                    line += "|\n";
+                    result += line;
+                }
+            }
+            result += seperator;
+            return result;
+        }
     }
     internal class Program
     {
@@ -146,6 +192,7 @@ namespace OmegaSudoku
                 { 3, 4, 5, 2, 8, 6, 1, 7, 9 }
             };
             SudokuBoard board = new SudokuBoard(solvedBoard);
+            Console.WriteLine(board);
             Console.WriteLine(board.CheckComplete()?"Solved":"Not Solved");
         }
     }
