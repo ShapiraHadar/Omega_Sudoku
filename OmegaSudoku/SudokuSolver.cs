@@ -31,13 +31,64 @@ namespace OmegaSudoku
             this.rowsBitmap = new ulong[board.GetBoardSize()];
             this.sqrBitmap = new ulong[board.GetBoardSize()];
         }
-        
+
         public SudokuBoard Solve()
         {
             InitiateBitmaps();
             FULL_MASK = (1UL << _board.GetBoardSize()) - 1;
-            return null;
+
+            if (!SolveRecursive())
+                throw new Exception("No solution");
+
+            return _board;
         }
+        private bool SolveRecursive()
+        {
+            if (!FindBestCell(out int row, out int col, out ulong mask))
+                return false; 
+
+            if (row == -1)
+                return true; 
+
+            int boxSize = _board.GetSquareSize();
+            int sqrIndex = (row / boxSize) * boxSize + (col / boxSize);
+
+            while (mask != 0)
+            {
+                ulong bit = mask & (~mask + 1);
+                mask -= bit;
+
+                int value = BitToValue(bit);
+
+                _board.GetBoard()[row, col] = value;
+                rowsBitmap[row] |= bit;
+                colsBitmap[col] |= bit;
+                sqrBitmap[sqrIndex] |= bit;
+
+                if (SolveRecursive())
+                    return true;
+
+                _board.GetBoard()[row, col] = 0;
+                rowsBitmap[row] &= ~bit;
+                colsBitmap[col] &= ~bit;
+                sqrBitmap[sqrIndex] &= ~bit;
+            }
+
+            return false;
+        }
+
+        private int BitToValue(ulong bit)
+        {
+            int value = 1;
+            while (bit > 1)
+            {
+                bit >>= 1;
+                value++;
+            }
+            return value;
+        }
+
+
         private ulong GetCandidatesMask(int row, int col) // returns the mask of the candidates for [row,col]
         {
             int boxSize = _board.GetSquareSize();

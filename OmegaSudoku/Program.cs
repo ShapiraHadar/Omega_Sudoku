@@ -4,6 +4,7 @@ using System.Linq;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading.Tasks;
+using System.IO;
 
 namespace OmegaSudoku
 {
@@ -39,7 +40,7 @@ namespace OmegaSudoku
         {
             double size=Math.Sqrt(board.GetLength(0));
             if (size != (int)size)
-                throw new Exception("Board size must be a perfect square");
+                throw new Exception($"Board size must be a perfect square {board.GetLength(0)}");
             if (board.GetLength(0) != board.GetLength(1))
                 throw new Exception("Board must be a square");
             this._squareSize = (int)size;
@@ -54,13 +55,25 @@ namespace OmegaSudoku
             double boardSize=Math.Sqrt(s.Length);
             double squareSize=Math.Sqrt(boardSize);
             if (squareSize != (int)squareSize)
-                throw new Exception("Board size must be a perfect square");
+                throw new Exception($"Board size must be a perfect square {s.Length}");
             this._boardSize = (int)boardSize;
             this._squareSize= (int)squareSize;
             this._board = new int[this._boardSize, this._boardSize];
             for (int i = 0; i < this._boardSize; i++)
                 for (int j = 0; j < this._boardSize; j++)
-                    this._board[i, j] = s[i * this._boardSize + j] - '0'; // only for 9*9 currently, easy to modify
+                {
+                    if('0'<=s[i * this._boardSize + j] && s[i * this._boardSize + j] <= '9')
+                    {
+                        this._board[i, j] = s[i * this._boardSize + j] - '0'; // for digs between 0-9
+                    }
+                    else if('A' <= s[i * this._boardSize + j] && s[i * this._boardSize + j] <= 'Z')
+                    {
+                        this._board[i, j] = s[i * this._boardSize + j] - 'A' + 10; // letters represent numbers between 10-26
+                    }
+                }
+                
+
+
         }
         public bool CheckComplete()
         {
@@ -163,7 +176,13 @@ namespace OmegaSudoku
                         line += "| ";
                         for (int t = 0; t < this._squareSize; t++)
                         {
-                            line += this._board[i * this._squareSize + j, k * this._squareSize + t];
+                            char cell = ' ';
+                            int value = this._board[i * this._squareSize + j, k * this._squareSize + t];
+                            if (0 <= value && value <= 9)
+                                cell = (char)('0' + value);
+                            else if(10<=value && value<=35)
+                                cell = (char)('A' + value - 10);
+                            line += cell;
                             line += " ";
                         }
                     }
@@ -177,23 +196,88 @@ namespace OmegaSudoku
     }
     internal class Program
     {
+        public static SudokuBoard GetBoard()
+        {
+            Console.WriteLine("Enter Board");
+            string input=Console.ReadLine();
+            return new SudokuBoard(input);
+        }
         static void Main()
         {
-            int[,] solvedBoard = new int[9, 9]
+            //int[,] solvedBoard = new int[9, 9]
+            //{
+            //    { 5, 3, 4, 6, 7, 8, 9, 1, 2 },
+            //    { 6, 7, 2, 1, 9, 5, 3, 4, 8 },
+            //    { 1, 9, 8, 3, 4, 2, 5, 6, 7 },
+            //    { 8, 5, 9, 7, 6, 1, 4, 2, 3 },
+            //    { 4, 2, 6, 8, 5, 3, 7, 9, 1 },
+            //    { 7, 1, 3, 9, 2, 4, 8, 5, 6 },
+            //    { 9, 6, 1, 5, 3, 7, 2, 8, 4 },
+            //    { 2, 8, 7, 4, 1, 9, 6, 3, 5 },
+            //    { 3, 4, 5, 2, 8, 6, 1, 7, 9 }
+            //};
+            //SudokuBoard board = new SudokuBoard(solvedBoard);
+            //Console.WriteLine(board);
+            //Console.WriteLine(board.CheckComplete()?"Solved":"Not Solved");
+
+            //000050000000D0000000000300A000000000090000000005000000000600001000000000000C000000000080000004000000000090000000002000000000000000000000000000000000000000000009000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+
+            TimeSpan total = DateTime.Now - DateTime.Now;
+            int count = 0;
+
+            foreach(string line in File.ReadLines("C:\\Users\\winte\\Desktop\\OmegaSudoku\\OmegaSudoku\\OmegaSudoku\\sudoku-3m.csv"))
             {
-                { 5, 3, 4, 6, 7, 8, 9, 1, 2 },
-                { 6, 7, 2, 1, 9, 5, 3, 4, 8 },
-                { 1, 9, 8, 3, 4, 2, 5, 6, 7 },
-                { 8, 5, 9, 7, 6, 1, 4, 2, 3 },
-                { 4, 2, 6, 8, 5, 3, 7, 9, 1 },
-                { 7, 1, 3, 9, 2, 4, 8, 5, 6 },
-                { 9, 6, 1, 5, 3, 7, 2, 8, 4 },
-                { 2, 8, 7, 4, 1, 9, 6, 3, 5 },
-                { 3, 4, 5, 2, 8, 6, 1, 7, 9 }
-            };
-            SudokuBoard board = new SudokuBoard(solvedBoard);
-            Console.WriteLine(board);
-            Console.WriteLine(board.CheckComplete()?"Solved":"Not Solved");
+                try
+                {
+                    SudokuBoard board = new SudokuBoard(line.Replace('.', '0'));
+                    SudokuSolver solver = new SudokuSolver(board);
+
+                    DateTime start = DateTime.Now;
+                    SudokuBoard solved = solver.Solve();
+                    TimeSpan solveTime = DateTime.Now - start;
+
+                    total += solveTime;
+                    count++;
+
+                    if (count % 1000 == 0)
+                    {
+                        Console.Clear();
+                        Console.WriteLine(count);
+                    }
+
+                    //Console.WriteLine(solved);
+                    //Console.WriteLine(solver.GetBoard().CheckComplete() ? "Solved" : "Not Solved");
+                    //Console.WriteLine("Solved in: " + solveTime.TotalMilliseconds + "ms\n\n\n");
+                }
+                catch(Exception e)
+                {
+                    Console.WriteLine(e.Message);
+                }
+            }
+
+            Console.WriteLine($"total: {total.TotalMilliseconds}ms to solve {count} boards");
+
+            while (true)
+            {
+                try
+                {
+                    SudokuBoard board = GetBoard();
+                    SudokuSolver solver = new SudokuSolver(board);
+
+                    DateTime start = DateTime.Now;
+                    SudokuBoard solved = solver.Solve();
+                    TimeSpan solveTime = DateTime.Now - start;
+
+                    Console.WriteLine(solved);
+                    Console.WriteLine(solver.GetBoard().CheckComplete() ? "Solved" : "Not Solved");
+                    Console.WriteLine("Solved in: " + solveTime.TotalMilliseconds + "ms");
+                }
+                catch(Exception e)
+                {
+                    Console.WriteLine(e.Message);
+                }
+            }
+            
         }
     }
 }
