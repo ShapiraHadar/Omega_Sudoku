@@ -44,36 +44,39 @@ namespace OmegaSudoku
         }
         private bool SolveRecursive()
         {
-            if (!FindBestCell(out int row, out int col, out ulong mask))
+            if (!FindBestCell(out int row, out int col, out ulong mask)) // unsolveable board
                 return false; 
 
             if (row == -1)
-                return true; 
+                return true; // already solved
 
             int boxSize = _board.GetSquareSize();
             int sqrIndex = (row / boxSize) * boxSize + (col / boxSize);
 
-            while (mask != 0)
+            while (mask != 0) //foreach candidate of chosen cell
             {
-                ulong bit = mask & (~mask + 1);
+                ulong bit = mask & (~mask + 1); // rightmost on bit in mask (lowest candidate)
                 mask -= bit;
 
                 int value = BitToValue(bit);
 
+                // assume candidate and try until branch fails
                 _board.GetBoard()[row, col] = value;
                 rowsBitmap[row] |= bit;
                 colsBitmap[col] |= bit;
                 sqrBitmap[sqrIndex] |= bit;
 
-                if (SolveRecursive())
+                if (SolveRecursive()) // recursive call
                     return true;
 
+                // if a branch fails try another candidate
                 _board.GetBoard()[row, col] = 0;
                 rowsBitmap[row] &= ~bit;
                 colsBitmap[col] &= ~bit;
                 sqrBitmap[sqrIndex] &= ~bit;
             }
 
+            // if all candidates lead to contradiction, no solution.
             return false;
         }
 

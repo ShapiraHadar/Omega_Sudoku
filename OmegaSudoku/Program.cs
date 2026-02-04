@@ -15,15 +15,17 @@ namespace OmegaSudoku
             while (true)
             {
                 string str = "";
-                try
-                {
-                    Console.WriteLine("Enter formatted Sudoku to solve:");
-                    str = Console.ReadLine();
-                }
-                catch (Exception e)
-                {
-                    Console.WriteLine("failed to read input! try again");
-                }
+                while(true)
+                    try
+                    {
+                        Console.WriteLine("Enter formatted Sudoku to solve:");
+                        str = Console.ReadLine();
+                        break;
+                    }
+                    catch (Exception e)
+                    {
+                        Console.WriteLine("failed to read input! try again");
+                    }
 
                 SudokuBoard board;
                 try
@@ -54,8 +56,6 @@ namespace OmegaSudoku
         static void Main()
         {
              MainLoop();
-            ///todo:
-            ///seperate MainLoop into single-responsibillity functions
         }
     }
 }
