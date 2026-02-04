@@ -38,13 +38,14 @@ namespace OmegaSudoku
                             throw new Exception("input board contains illegal characters! board must only contain digits between 0-9");
                         }
                     board = new SudokuBoard(str);
+                    Console.WriteLine($"Your board:\n{board}");
                     SudokuSolver solver = new SudokuSolver(board);
                     DateTime start = DateTime.Now;
                     SudokuBoard solved = solver.Solve();
                     TimeSpan solveTime = DateTime.Now - start;
-                    Console.WriteLine(solved);
+                    Console.WriteLine($"Solved Board:\n{solved}");
                     Console.WriteLine($"Solved in {solveTime.TotalMilliseconds}ms");
-                    Console.WriteLine(solved.FormatString());
+                    Console.WriteLine($"In string format: {solved.FormatString()}\n");
                 }
                 catch (Exception e)
                 {

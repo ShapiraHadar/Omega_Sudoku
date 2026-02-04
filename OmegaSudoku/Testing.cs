@@ -58,11 +58,5 @@ namespace OmegaSudoku
             }
             return true;
         }
-
-        ///todo:
-        ///- test bad input
-        ///- test unsolvable boards
-        ///- test printing
-
     }
 }

@@ -164,7 +164,7 @@ namespace OmegaSudoku
                         throw new Exception("Illegal value on board");
 
                     int bitIndex = val - 1;
-                    ulong bit = 1UL << bitIndex;
+                    ulong bit = 1UL << bitIndex; //1UL - 1 in unsigned long
 
                     int sqrIndex = (i / boxSize) * boxSize + (j / boxSize);
 
